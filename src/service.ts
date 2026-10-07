@@ -40,7 +40,8 @@ export class PollService {
         this.store.markPublished(poll.id, messageId, poll.revision);
         return this.store.getPoll(poll.id)!;
       } catch (error) {
-        const status = (error as { statusCode?: number })?.statusCode;
+        const failure = error as { status?: number; statusCode?: number } | null;
+        const status = failure?.status ?? failure?.statusCode;
         if (status && [400, 401, 403, 404, 413, 422].includes(status)) this.store.allowPublishRetry(poll.id);
         console.error('투표 게시 확인 필요:', poll.id, status ?? 'unknown');
         throw new PollError(`앗, 투표 시작을 확인하지 못했어요. 운영자에게 이 ID를 알려줘요: ${poll.id} 🐻`);

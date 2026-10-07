@@ -6,7 +6,7 @@ import {
 } from '@microsoft/agents-hosting';
 import { buildCreateCard, buildHelpCard, buildPollCard } from './cards.js';
 import { parseCommand, PollError } from './domain.js';
-import { PollService, type Actor } from './service.js';
+import { PollService, type Actor, type Transport } from './service.js';
 import { Store } from './store.js';
 import { startScheduler } from './scheduler.js';
 
@@ -69,19 +69,15 @@ export class PollBot extends ActivityHandler {
   }
 }
 
-export function createApp(env: NodeJS.ProcessEnv = process.env) {
-  for (const key of ['MicrosoftAppId', 'MicrosoftAppPassword', 'MicrosoftAppTenantId'])
-    if (!env[key]?.trim()) throw new Error(`투표곰을 깨우려면 ${key} 설정이 필요해요 🐻`);
-  const appId = env.MicrosoftAppId!;
-  const auth = getAuthConfigWithDefaults({ clientId: appId, clientSecret: env.MicrosoftAppPassword, tenantId: env.MicrosoftAppTenantId });
-  const adapter = new CloudAdapter(auth);
-  const store = Store.open(env.DATABASE_PATH ?? './data/team-poll-bot.sqlite');
+export function createTeamsTransport(adapter: CloudAdapter, appId: string, store: Store): Transport {
+  // SDK 기본 처리기는 오류를 삼키므로 저장된 집계의 재시도 판단까지 전파한다.
+  adapter.onTurnError = async (_context, error) => { throw error; };
   const withConversation = async (conversationId: string, work: (context: TurnContext) => Promise<void>) => {
     const reference = store.conversationReference(conversationId);
     if (!reference) throw new Error('missing-conversation-reference');
     await adapter.continueConversation(appId, reference as Parameters<CloudAdapter['continueConversation']>[1], work);
   };
-  const service = new PollService(store, {
+  return {
     async publish(poll) {
       let messageId: string | undefined;
       await withConversation(poll.conversationId, async context => {
@@ -99,7 +95,17 @@ export function createApp(env: NodeJS.ProcessEnv = process.env) {
         await context.updateActivity(message);
       });
     },
-  });
+  };
+}
+
+export function createApp(env: NodeJS.ProcessEnv = process.env) {
+  for (const key of ['MicrosoftAppId', 'MicrosoftAppPassword', 'MicrosoftAppTenantId'])
+    if (!env[key]?.trim()) throw new Error(`투표곰을 깨우려면 ${key} 설정이 필요해요 🐻`);
+  const appId = env.MicrosoftAppId!;
+  const auth = getAuthConfigWithDefaults({ clientId: appId, clientSecret: env.MicrosoftAppPassword, tenantId: env.MicrosoftAppTenantId });
+  const adapter = new CloudAdapter(auth);
+  const store = Store.open(env.DATABASE_PATH ?? './data/team-poll-bot.sqlite');
+  const service = new PollService(store, createTeamsTransport(adapter, appId, store));
   const bot = new PollBot(service, store);
   const stopScheduler = startScheduler(service);
   const app = express();

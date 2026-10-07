@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { HttpError } from '@microsoft/agents-hosting';
 import { Store, type Poll } from '../src/store.js';
 import { PollService } from '../src/service.js';
 
@@ -87,7 +88,10 @@ test('불확실한 게시 실패는 자동 재게시하지 않고 확실한 거�
   await assert.rejects(service.create(owner, draft.id, form, now), /게시 여부/);
   assert.equal(published.length, 0);
   const retry = service.createDraft(owner, now);
-  transport.publish = async () => { throw Object.assign(new Error('rejected'), { statusCode: 400 }); };
+  transport.publish = async () => {
+    const config = { method: 'POST', url: 'https://example.invalid' };
+    throw new HttpError('rejected', { status: 400, statusText: 'Bad Request', data: {}, headers: new Headers(), config }, config);
+  };
   await assert.rejects(service.create(owner, retry.id, form, now));
   transport.publish = async value => { published.push(value); return 'message'; };
   assert.equal((await service.create(owner, retry.id, form, now)).status, 'open');

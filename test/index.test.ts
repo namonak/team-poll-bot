@@ -3,7 +3,8 @@ import test from 'node:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createApp, cardActionResponse, dispatchAction } from '../src/index.js';
+import { CloudAdapter, getAuthConfigWithDefaults } from '@microsoft/agents-hosting';
+import { createApp, createTeamsTransport, cardActionResponse, dispatchAction } from '../src/index.js';
 import { Store } from '../src/store.js';
 import { PollService } from '../src/service.js';
 
@@ -36,5 +37,25 @@ test('카드 액션을 실제 서비스에 전달하며 변조 타입과 알 수
     await assert.rejects(dispatchAction(service, actor, action));
   assert.equal(cardActionResponse('쏙 담았어요').type, 'application/vnd.microsoft.activity.message');
   assert.equal(cardActionResponse('다시 확인해줘요', false).statusCode, 400);
+  store.close();
+});
+
+test('실제 SDK의 카드 갱신 실패가 재시도할 집계 버전을 지우지 않는다', async () => {
+  const store = Store.open(':memory:');
+  const adapter = new CloudAdapter(getAuthConfigWithDefaults({ clientId: 'app', clientSecret: 'secret', tenantId: 'tenant' }));
+  let messages = 0;
+  Object.assign(adapter, {
+    createConnectorClientWithIdentity: async () => ({}),
+    createUserTokenClient: async () => ({}),
+    sendActivities: async (...[_context, activities]: Parameters<CloudAdapter['sendActivities']>) => { messages += activities.length; return activities.map(() => ({ id: 'message' })); },
+    updateActivity: async () => { throw new Error('PUT failed'); },
+  });
+  store.activateConversation('chat', { serviceUrl: 'https://example.invalid', channelId: 'msteams', conversation: { id: 'chat', conversationType: 'groupChat' }, agent: { id: 'bot' }, user: { id: 'owner' } });
+  const service = new PollService(store, createTeamsTransport(adapter, 'app', store));
+  const actor = { conversationId: 'chat', userId: 'owner', userName: '곰친구' };
+  const poll = await service.create(actor, service.createDraft(actor).id, { title: '점심', options: 'A\nB' });
+  assert.match(await service.vote(actor, poll.id, '1'), /선택은 잘 담았어요/);
+  assert.equal(store.listDirtyPolls().length, 1);
+  assert.equal(messages, 1); // SDK 기본 영어 오류 메시지 두 개를 게시하지 않음
   store.close();
 });
