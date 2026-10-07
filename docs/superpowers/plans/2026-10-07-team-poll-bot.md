@@ -45,10 +45,10 @@
 
 **Interfaces:** `buildCreateCard(draftId, prefill)` / `buildPollCard(poll)` → AdaptiveCard 1.5. `PollService.createDraft`, `create`, `vote`, `close`, `refresh`, `runScheduledTasks`는 저장소를 사용하고 전송·갱신만 외부 콜백으로 실행. `createApp()`는 필수 인증값 검증 후 JWT를 적용한 Express 앱 반환.
 
-- [ ] 작성자·대화방 권한, 중복 제출, 응답 변경, 복수 집계·동률, 마감, 갱신 실패·동시 갱신의 실패 테스트 작성.
-- [ ] 카드 생성과 서비스의 투표별 순차 게시·갱신 구현. 모호한 게시 실패는 자동 재게시하지 않음.
-- [ ] Teams 메시지/Action.Execute 연결, 저장한 대화 참조로 마감·갱신 재시도, 인증 누락 시 실패.
-- [ ] npm test/typecheck 및 tsc 빌드 확인 후 `feat(투표곰): 생성 폼과 실시간 투표 카드를 연결` 커밋.
+- [x] 작성자·대화방 권한, 중복 제출, 응답 변경, 복수 집계·동률, 마감, 갱신 실패·동시 갱신의 실패 테스트 작성.
+- [x] 카드 생성과 서비스의 투표별 순차 게시·갱신 구현. 모호한 게시 실패는 자동 재게시하지 않음.
+- [x] Teams 메시지/Action.Execute 연결, 저장한 대화 참조로 마감·갱신 재시도, 인증 누락 시 실패.
+- [x] npm test/typecheck 및 tsc 빌드 확인 후 `feat(투표곰): 생성 폼과 실시간 투표 카드를 연결` 커밋.
 
 ## Task 3: 아이콘·Teams 패키지·배포
 
