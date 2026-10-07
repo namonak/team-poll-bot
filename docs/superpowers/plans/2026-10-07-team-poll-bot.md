@@ -34,10 +34,10 @@
 
 **Interfaces:** `parseCommand(text)` → 도움말/폼 초기값, `validatePoll(input, now)` → 정규화 설정, `parseDeadline(text, now)` → UTC ISO 또는 null. `Store.open(path)` → DB, `createDraft(conversationId, ownerId, now)` → 초안, `createPoll(draftId, ownerName, config)` → 투표, `getPoll(id)` → 옵션·응답을 포함한 저장 투표, 응답/마감/게시 상태 변경 트랜잭션.
 
-- [ ] 명령·마감·투표 검증의 실패 테스트 작성 및 실행. 특히 `2026-12-31`에서 다음 해 날짜, 2월 30일, 따옴표, 악성 URL 검증.
-- [ ] 최소 순수 함수와 SQLite 모델 구현. 중복 draft ID로 기존 투표 반환, 응답 교체와 revision 증가 원자성.
-- [ ] 재개방 DB에서 응답 유지와 만료 초안 검증, npm test/typecheck 실행.
-- [ ] `feat(투표): 명령 파싱과 투표 저장소를 구현` 커밋.
+- [x] 명령·마감·투표 검증의 실패 테스트 작성 및 실행. 특히 `2026-12-31`에서 다음 해 날짜, 2월 30일, 따옴표, 악성 URL 검증.
+- [x] 최소 순수 함수와 SQLite 모델 구현. 중복 draft ID로 기존 투표 반환, 응답 교체와 revision 증가 원자성.
+- [x] 재개방 DB에서 응답 유지와 만료 초안 검증, npm test/typecheck 실행.
+- [x] `feat(투표): 명령 파싱과 투표 저장소를 구현` 커밋.
 
 ## Task 2: 카드·서비스·Teams 연결
 
