@@ -1,0 +1,33 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.22/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.22",
+  "version": "1.0.0",
+  "id": "{{MICROSOFT_APP_ID}}",
+  "developer": {
+    "name": "Joannes",
+    "websiteUrl": "https://namonak.dev",
+    "privacyUrl": "https://namonak.dev/privacy",
+    "termsOfUseUrl": "https://namonak.dev/terms"
+  },
+  "name": { "short": "투표곰", "full": "팀의 마음을 모아주는 투표곰" },
+  "icons": { "color": "color.png", "outline": "outline.png" },
+  "accentColor": "#157AFF",
+  "description": {
+    "short": "함께 고를 일이 있으면 콕 불러줘요! 투표곰이 마음을 모아요 🐻",
+    "full": "투표곰과 함께 후보를 고르고 마음을 모아봐요! 제목과 후보, 마감 시간을 적어 투표를 시작하고 모인 선택을 바로 확인해요. 여러 후보 선택과 마음 바꾸기도 도와드려요 🐾"
+  },
+  "bots": [{
+    "botId": "{{MICROSOFT_APP_ID}}",
+    "scopes": ["groupChat"],
+    "supportsFiles": false,
+    "isNotificationOnly": false,
+    "commandLists": [{
+      "scopes": ["groupChat"],
+      "commands": [
+        { "title": "투표만들기", "description": "곰곰이 고를 투표를 만들어요! 제목을 적으면 미리 담아둘게요 🐻" },
+        { "title": "투표만들기 + 준비곰 목록", "description": "제목과 후보를 한 번에 쏙! 마감과 복수 선택도 챙겨요 🐾" }
+      ]
+    }]
+  }],
+  "validDomains": ["poll-bot.namonak.dev"]
+}

@@ -1,0 +1,9 @@
+.git
+.env
+appsettings.json
+node_modules
+dist
+data
+*.sqlite*
+.superpowers
+.DS_Store

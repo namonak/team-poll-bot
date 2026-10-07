@@ -56,10 +56,10 @@
 
 **Interfaces:** 명령 제안은 manifest commandLists, 패키지 스크립트는 환경 설정의 앱 ID를 치환해 dist ZIP 생성. 컨테이너는 `node dist/index.js` 실행.
 
-- [ ] ZIP 구성·명령·ID 치환·아이콘 크기 검증 테스트를 먼저 작성·실행.
-- [ ] ImageGen으로 컬러 아이콘 제작, 단순 흰색 외곽선 PNG 제작, 실제 크기 확인. 원본은 검증 후 삭제.
-- [ ] 참조 배포 파일과 패키징 스크립트를 투표곰 이름/포트/DB로 적용.
-- [ ] npm test/typecheck/build, 가능하면 Compose 설정·Docker 빌드 확인 후 `feat(배포): 투표곰 아이콘과 Teams 패키지를 추가` 커밋.
+- [x] ZIP 구성·명령·ID 치환·아이콘 크기 검증 테스트를 먼저 작성·실행.
+- [x] ImageGen으로 컬러 아이콘 제작, 단순 흰색 외곽선 PNG 제작, 실제 크기 확인. 원본은 검증 후 삭제.
+- [x] 참조 배포 파일과 패키징 스크립트를 투표곰 이름/포트/DB로 적용.
+- [x] npm test/typecheck/build, 가능하면 Compose 설정·Docker 빌드 확인 후 `feat(배포): 투표곰 아이콘과 Teams 패키지를 추가` 커밋.
 
 ## Task 4: README와 최종 검토
 

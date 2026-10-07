@@ -1,0 +1,16 @@
+services:
+  bot:
+    container_name: team-poll-bot
+    build: .
+    image: team-poll-bot:local
+    env_file: .env
+    environment:
+      PORT: 3978
+      DATABASE_PATH: /data/team-poll-bot.sqlite
+    ports:
+      - "127.0.0.1:3979:3978"
+    volumes:
+      - poll-data:/data
+    restart: unless-stopped
+volumes:
+  poll-data:
