@@ -24,10 +24,11 @@ test('운영 앱은 인증 없는 메시지를 차단하고 헬스 체크를 제
 });
 test('카드 액션을 실제 서비스에 전달하며 변조 타입과 알 수 없는 동작을 거부한다', async () => {
   const store = Store.open(':memory:');
-  const service = new PollService(store, { async publish() { return 'message'; }, async update() {} });
+  const service = new PollService(store, { async replace() {}, async update() {} });
   const actor = { conversationId: 'chat', userId: 'owner', userName: '곰친구' };
   const now = new Date();
   const draft = service.createDraft(actor, now);
+  store.setDraftMessage(draft.id, 'form-message');
   const created = await dispatchAction(service, actor, { verb: 'pollCreate', data: { draftId: draft.id, title: '점심', options: 'A\nB' } });
   assert.match(created, /시작/);
   const poll = store.pollForDraft(draft.id)!;
@@ -44,18 +45,27 @@ test('실제 SDK의 카드 갱신 실패가 재시도할 집계 버전을 지우
   const store = Store.open(':memory:');
   const adapter = new CloudAdapter(getAuthConfigWithDefaults({ clientId: 'app', clientSecret: 'secret', tenantId: 'tenant' }));
   let messages = 0;
+  let updates = 0;
+  const updatedIds: string[] = [];
   Object.assign(adapter, {
     createConnectorClientWithIdentity: async () => ({}),
     createUserTokenClient: async () => ({}),
     sendActivities: async (...[_context, activities]: Parameters<CloudAdapter['sendActivities']>) => { messages += activities.length; return activities.map(() => ({ id: 'message' })); },
-    updateActivity: async () => { throw new Error('PUT failed'); },
+    updateActivity: async (...[_context, activity]: Parameters<CloudAdapter['updateActivity']>) => {
+      updatedIds.push(activity.id!);
+      updates++;
+      if (updates > 1) throw new Error('PUT failed');
+    },
   });
   store.activateConversation('chat', { serviceUrl: 'https://example.invalid', channelId: 'msteams', conversation: { id: 'chat', conversationType: 'groupChat' }, agent: { id: 'bot' }, user: { id: 'owner' } });
   const service = new PollService(store, createTeamsTransport(adapter, 'app', store));
   const actor = { conversationId: 'chat', userId: 'owner', userName: '곰친구' };
-  const poll = await service.create(actor, service.createDraft(actor).id, { title: '점심', options: 'A\nB' });
+  const draft = service.createDraft(actor);
+  store.setDraftMessage(draft.id, 'form-message');
+  const poll = await service.create(actor, draft.id, { title: '점심', options: 'A\nB' });
+  assert.deepEqual(updatedIds, ['form-message']);
   assert.match(await service.vote(actor, poll.id, '1'), /투표는 저장됐어요/);
   assert.equal(store.listDirtyPolls().length, 1);
-  assert.equal(messages, 1); // SDK 기본 영어 오류 메시지 두 개를 게시하지 않음
+  assert.equal(messages, 0); // 카드 두 장을 보내지 않고 원래 폼을 교체함
   store.close();
 });

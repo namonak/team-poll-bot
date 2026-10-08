@@ -23,7 +23,7 @@ export async function dispatchAction(service: PollService, actor: Actor, action:
   const fields = data as Record<string, unknown>;
   if (verb === 'pollCreate' && typeof fields.draftId === 'string' && fields.draftId.length <= 100) {
     await service.create(actor, fields.draftId, fields);
-    return '투표를 시작했어요. 아래 결과판에서 투표해 주세요.';
+    return '투표를 시작했어요. 이 카드가 투표 수집 카드로 바뀌었어요.';
   }
   if (typeof fields.pollId !== 'string' || fields.pollId.length > 100) throw new PollError('투표 정보를 찾을 수 없어요. 결과판의 버튼을 다시 눌러주세요.');
   if (verb === 'pollVote') return service.vote(actor, fields.pollId, fields.choices);
@@ -78,14 +78,13 @@ export function createTeamsTransport(adapter: CloudAdapter, appId: string, store
     await adapter.continueConversation(appId, reference as Parameters<CloudAdapter['continueConversation']>[1], work);
   };
   return {
-    async publish(poll) {
-      let messageId: string | undefined;
+    async replace(poll, messageId) {
       await withConversation(poll.conversationId, async context => {
-        const sent = await context.sendActivity(MessageFactory.attachment(CardFactory.adaptiveCard(buildPollCard(poll))));
-        messageId = sent?.id;
+        const message = MessageFactory.attachment(CardFactory.adaptiveCard(buildPollCard(poll)));
+        message.id = messageId;
+        message.conversation = context.activity.conversation;
+        await context.updateActivity(message);
       });
-      if (!messageId) throw new Error('missing-message-id');
-      return messageId;
     },
     async update(poll) {
       await withConversation(poll.conversationId, async context => {

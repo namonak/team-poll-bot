@@ -2,7 +2,7 @@ import { PollError, validatePoll } from './domain.js';
 import { Store, type Poll } from './store.js';
 
 export type Actor = { conversationId: string; userId: string; userName: string };
-export type Transport = { publish(poll: Poll): Promise<string>; update(poll: Poll): Promise<void> };
+export type Transport = { replace(poll: Poll, messageId: string): Promise<void>; update(poll: Poll): Promise<void> };
 const pending = '투표는 저장됐어요. 결과판 갱신이 늦어지고 있어 자동으로 다시 시도할게요.';
 
 export class PollService {
@@ -32,12 +32,12 @@ export class PollService {
       let poll = this.store.pollForDraft(draftId);
       if (poll?.messageId) return poll;
       if (now.getTime() - Date.parse(draft.createdAt) >= 86_400_000) throw new PollError('카드가 만료됐어요 (24시간 경과). @투표곰을 다시 불러주세요.');
+      if (!draft.messageId) throw new PollError('준비 카드를 찾을 수 없어요. @투표곰으로 새 카드를 열어주세요.');
       poll ??= this.store.createPoll(draftId, this.name(actor), validatePoll(input, now));
       if (!this.store.beginPublish(poll.id)) throw new PollError(`투표 게시 상태를 확인하고 있어요. 관리자에게 이 ID를 알려주세요: ${poll.id}`);
       try {
-        const messageId = await this.transport.publish(poll);
-        if (!messageId) throw new Error('missing-message-id');
-        this.store.markPublished(poll.id, messageId, poll.revision);
+        await this.transport.replace(poll, draft.messageId);
+        this.store.markPublished(poll.id, draft.messageId, poll.revision);
         return this.store.getPoll(poll.id)!;
       } catch (error) {
         const failure = error as { status?: number; statusCode?: number } | null;
