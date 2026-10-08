@@ -6,7 +6,7 @@ export function startScheduler(service: PollService) {
     if (running) return;
     running = true;
     try { await service.runScheduledTasks(); }
-    catch { console.error('투표곰 주기 작업을 다시 확인해줘요 🐻'); }
+    catch { console.error('주기 작업(자동 마감, 카드 갱신) 실패'); }
     finally { running = false; }
   }, 30_000);
   timer.unref();

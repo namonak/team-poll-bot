@@ -17,19 +17,19 @@ export function cardActionResponse(message: string, accepted = true) {
 }
 
 export async function dispatchAction(service: PollService, actor: Actor, action: unknown): Promise<string> {
-  if (!action || typeof action !== 'object') throw new PollError('앗, 버튼을 다시 눌러줘요 🐾');
+  if (!action || typeof action !== 'object') throw new PollError('요청을 처리하지 못했어요. 버튼을 다시 눌러주세요.');
   const { verb, data } = action as { verb?: unknown; data?: unknown };
-  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new PollError('앗, 카드 내용을 다시 확인해줘요 🐻');
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new PollError('카드 정보가 올바르지 않아요. @투표곰으로 새 카드를 열어주세요.');
   const fields = data as Record<string, unknown>;
   if (verb === 'pollCreate' && typeof fields.draftId === 'string' && fields.draftId.length <= 100) {
     await service.create(actor, fields.draftId, fields);
-    return '투표를 시작했어요! 아래 결과판에 마음을 모아줘요 🐻';
+    return '투표를 시작했어요. 아래 결과판에서 투표해 주세요.';
   }
-  if (typeof fields.pollId !== 'string' || fields.pollId.length > 100) throw new PollError('앗, 투표 카드를 다시 확인해줘요 🐻');
+  if (typeof fields.pollId !== 'string' || fields.pollId.length > 100) throw new PollError('투표 정보를 찾을 수 없어요. 결과판의 버튼을 다시 눌러주세요.');
   if (verb === 'pollVote') return service.vote(actor, fields.pollId, fields.choices);
   if (verb === 'pollClose') return service.close(actor, fields.pollId);
   if (verb === 'pollRefresh') return service.refresh(actor, fields.pollId);
-  throw new PollError('이 버튼은 아직 모르겠어요. 투표곰을 다시 불러줘요 🐻');
+  throw new PollError('지원하지 않는 버튼이에요. @투표곰으로 새 카드를 열어주세요.');
 }
 
 export class PollBot extends ActivityHandler {
@@ -46,7 +46,7 @@ export class PollBot extends ActivityHandler {
           if (sent?.id) store.setDraftMessage(draft.id, sent.id);
         } else await context.sendActivity(MessageFactory.attachment(CardFactory.adaptiveCard(buildHelpCard(command === 'invalid'))));
       } catch (error) {
-        await context.sendActivity(error instanceof PollError ? error.message : '앗, 준비 카드를 펼치지 못했어요. 잠시 뒤 다시 불러줘요 🐻');
+        await context.sendActivity(error instanceof PollError ? error.message : '투표 카드를 만들지 못했어요. 잠시 후 @투표곰을 다시 불러주세요.');
       }
       await next();
     });
@@ -54,17 +54,17 @@ export class PollBot extends ActivityHandler {
   private remember(context: TurnContext): Actor {
     const activity = context.activity;
     if (activity.channelId !== 'msteams' || activity.conversation?.conversationType !== 'groupChat' || !activity.conversation.id || !activity.from?.id)
-      throw new PollError('투표곰은 Teams 단체 대화방에서 함께해요. 대화방으로 불러줘요 🐻');
+      throw new PollError('투표곰은 Teams 단체 대화방에서만 사용할 수 있어요.');
     this.store.activateConversation(activity.conversation.id, activity.getConversationReference());
-    return { conversationId: activity.conversation.id, userId: activity.from.id, userName: activity.from.name ?? '곰 친구' };
+    return { conversationId: activity.conversation.id, userId: activity.from.id, userName: activity.from.name ?? '이름 없음' };
   }
   protected override async onAdaptiveCardInvoke(context: TurnContext, invoke: AdaptiveCardInvokeValue): Promise<AdaptiveCardInvokeResponse> {
     try {
       const actor = this.remember(context);
       return cardActionResponse(await dispatchAction(this.service, actor, invoke.action)) as unknown as AdaptiveCardInvokeResponse;
     } catch (error) {
-      if (!(error instanceof PollError)) console.error('투표곰 카드 동작을 다시 확인해줘요 🐻');
-      return cardActionResponse(error instanceof PollError ? error.message : '앗, 선택을 확인하지 못했어요. 잠시 뒤 다시 눌러줘요 🐻', false) as AdaptiveCardInvokeResponse;
+      if (!(error instanceof PollError)) console.error('카드 동작 처리 실패');
+      return cardActionResponse(error instanceof PollError ? error.message : '요청을 처리하지 못했어요. 잠시 후 다시 눌러주세요.', false) as AdaptiveCardInvokeResponse;
     }
   }
 }
@@ -100,7 +100,7 @@ export function createTeamsTransport(adapter: CloudAdapter, appId: string, store
 
 export function createApp(env: NodeJS.ProcessEnv = process.env) {
   for (const key of ['MicrosoftAppId', 'MicrosoftAppPassword', 'MicrosoftAppTenantId'])
-    if (!env[key]?.trim()) throw new Error(`투표곰을 깨우려면 ${key} 설정이 필요해요 🐻`);
+    if (!env[key]?.trim()) throw new Error(`.env에 ${key} 설정이 필요해요`);
   const appId = env.MicrosoftAppId!;
   const auth = getAuthConfigWithDefaults({ clientId: appId, clientSecret: env.MicrosoftAppPassword, tenantId: env.MicrosoftAppTenantId });
   const adapter = new CloudAdapter(auth);
@@ -116,7 +116,7 @@ export function createApp(env: NodeJS.ProcessEnv = process.env) {
   });
   app.use((error: { status?: number }, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
     const status = error.status === 413 ? 413 : error.status === 400 ? 400 : 500;
-    response.status(status).json({ error: '앗, 요청을 확인하지 못했어요. 잠시 뒤 다시 불러줘요 🐻' });
+    response.status(status).json({ error: '요청을 처리하지 못했어요.' });
   });
   return app;
 }

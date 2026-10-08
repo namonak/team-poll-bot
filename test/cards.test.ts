@@ -9,7 +9,7 @@ const poll: Poll = { id: 'poll', draftId: 'draft', conversationId: 'chat', owner
 test('집계는 참여 인원과 전체 표 수를 구분하고 입력값을 마크다운 이스케이프한다', () => {
   const card = buildPollCard(poll);
   const body = JSON.stringify(card.body);
-  assert.match(body, /2명이.*3표/);
+  assert.match(body, /참여 2명 · 총 3표/);
   assert.match(body, /A — 2표.*100%/);
   assert.match(body, /B — 1표.*50%/);
   assert.ok(body.includes('\\\\['));
@@ -21,7 +21,7 @@ test('마감 카드는 투표 입력을 제거하고 동률 후보를 모두 표
   const card = buildPollCard({ ...poll, status: 'closed', votes: [{ memberId: 'a', memberName: '민수', choices: ['1', '2'] }] });
   assert.ok(card.body.every(item => !item.type.startsWith('Input.')));
   assert.deepEqual(card.actions.map(a => a.verb), ['pollRefresh']);
-  assert.match(JSON.stringify(card.body), /함께 1등.*A.*B/);
+  assert.match(JSON.stringify(card.body), /공동 1위 \(1표\).*A.*B/);
 });
 test('생성 폼은 빈 입력과 필수 제목·항목을 제출 액션에 연결한다', () => {
   const card = buildCreateCard('draft');

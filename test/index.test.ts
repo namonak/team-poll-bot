@@ -54,7 +54,7 @@ test('실제 SDK의 카드 갱신 실패가 재시도할 집계 버전을 지우
   const service = new PollService(store, createTeamsTransport(adapter, 'app', store));
   const actor = { conversationId: 'chat', userId: 'owner', userName: '곰친구' };
   const poll = await service.create(actor, service.createDraft(actor).id, { title: '점심', options: 'A\nB' });
-  assert.match(await service.vote(actor, poll.id, '1'), /선택은 잘 담았어요/);
+  assert.match(await service.vote(actor, poll.id, '1'), /투표는 저장됐어요/);
   assert.equal(store.listDirtyPolls().length, 1);
   assert.equal(messages, 1); // SDK 기본 영어 오류 메시지 두 개를 게시하지 않음
   store.close();

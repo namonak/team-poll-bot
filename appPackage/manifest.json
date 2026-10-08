@@ -9,12 +9,12 @@
     "privacyUrl": "https://namonak.dev/privacy",
     "termsOfUseUrl": "https://namonak.dev/terms"
   },
-  "name": { "short": "투표곰", "full": "팀의 마음을 모아주는 투표곰" },
+  "name": { "short": "투표곰", "full": "단체 대화방 투표 도우미 투표곰" },
   "icons": { "color": "color.png", "outline": "outline.png" },
   "accentColor": "#157AFF",
   "description": {
-    "short": "함께 고를 일이 있으면 콕 불러줘요! 투표곰이 마음을 모아요 🐻",
-    "full": "투표곰과 함께 후보를 고르고 마음을 모아봐요! 제목과 후보, 마감 시간을 적어 투표를 시작하고 모인 선택을 바로 확인해요. 여러 후보 선택과 마음 바꾸기도 도와드려요 🐾"
+    "short": "@투표곰을 부르면 대화방에서 바로 투표를 만들 수 있어요 🐻",
+    "full": "단체 대화방에서 @투표곰을 멘션하면 투표 만들기 카드가 열려요. 제목, 후보(2~10개), 마감 시간을 정해 투표를 시작하면 결과판에 실시간으로 표시돼요. 복수 선택과 투표 변경을 지원해요."
   },
   "bots": [{
     "botId": "{{MICROSOFT_APP_ID}}",

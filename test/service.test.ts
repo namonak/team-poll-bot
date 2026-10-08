@@ -54,7 +54,7 @@ test('카드 갱신 실패 후 저장된 응답과 마감 결과를 다시 게�
   const poll = await service.create(owner, service.createDraft(owner, now).id, form, now);
   transport.update = async () => { throw new Error('offline'); };
   const result = await service.vote(friend, poll.id, '1', now);
-  assert.match(result, /선택은 잘 담았어요/);
+  assert.match(result, /투표는 저장됐어요/);
   assert.equal(store.getPoll(poll.id)!.votes.length, 1);
   assert.equal(store.listDirtyPolls().length, 1);
   transport.update = async value => { updated.push(value); };
@@ -85,7 +85,7 @@ test('불확실한 게시 실패는 자동 재게시하지 않고 확실한 거�
   transport.publish = async () => { throw new Error('response lost'); };
   await assert.rejects(service.create(owner, draft.id, form, now));
   transport.publish = async value => { published.push(value); return 'message'; };
-  await assert.rejects(service.create(owner, draft.id, form, now), /게시 여부/);
+  await assert.rejects(service.create(owner, draft.id, form, now), /게시 상태/);
   assert.equal(published.length, 0);
   const retry = service.createDraft(owner, now);
   transport.publish = async () => {
