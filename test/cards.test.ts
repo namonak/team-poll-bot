@@ -23,9 +23,9 @@ test('마감 카드는 투표 입력을 제거하고 동률 후보를 모두 표
   assert.deepEqual(card.actions.map(a => a.verb), ['pollRefresh']);
   assert.match(JSON.stringify(card.body), /함께 1등.*A.*B/);
 });
-test('생성 폼은 사전 입력과 필수 제목·항목을 제출 액션에 연결한다', () => {
-  const card = buildCreateCard('draft', { title: '점심', options: 'A\nB', multiple: true });
-  assert.equal(card.body.find(item => item.id === 'title')!.value, '점심');
+test('생성 폼은 빈 입력과 필수 제목·항목을 제출 액션에 연결한다', () => {
+  const card = buildCreateCard('draft');
+  assert.equal(card.body.find(item => item.id === 'title')!.value, undefined);
   assert.equal(card.body.find(item => item.id === 'options')!.isRequired, true);
   assert.equal(card.actions[0].data.draftId, 'draft');
 });

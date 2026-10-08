@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.22/MicrosoftTeams.schema.json",
   "manifestVersion": "1.22",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "id": "{{MICROSOFT_APP_ID}}",
   "developer": {
     "name": "Joannes",
@@ -20,14 +20,7 @@
     "botId": "{{MICROSOFT_APP_ID}}",
     "scopes": ["groupChat"],
     "supportsFiles": false,
-    "isNotificationOnly": false,
-    "commandLists": [{
-      "scopes": ["groupChat"],
-      "commands": [
-        { "title": "투표만들기", "description": "곰곰이 고를 투표를 만들어요! 제목을 적으면 미리 담아둘게요 🐻" },
-        { "title": "투표만들기 + 준비곰 목록", "description": "제목과 후보를 한 번에 쏙! 마감과 복수 선택도 챙겨요 🐾" }
-      ]
-    }]
+    "isNotificationOnly": false
   }],
   "validDomains": ["poll-bot.namonak.dev"]
 }

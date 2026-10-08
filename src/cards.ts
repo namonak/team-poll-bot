@@ -1,4 +1,3 @@
-import type { Prefill } from './domain.js';
 import type { Poll } from './store.js';
 
 type Element = { type: string; [key: string]: unknown };
@@ -12,22 +11,24 @@ const card = (body: Element[], actions: Action[]): Card => ({ type: 'AdaptiveCar
 
 export function buildHelpCard(invalid = false) {
   return card([
-    block(invalid ? '앗, 곰곰이 생각해도 모르겠어요. 아래처럼 불러줘요 🐻' : '안녕하세요, 투표곰이에요! 함께 고를 일이 있으면 콕 불러줘요 🐻', { weight: 'Bolder' }),
-    block('🐾 @투표곰 투표만들기 — 빈 준비 카드를 펼쳐요!\n🐾 @투표곰 투표만들기 제목 — 제목을 미리 담아요!'),
-    block('🧺 한 번에 준비하려면 이렇게 적어줘요!\n@투표곰 투표만들기 + "점심" "식당 A" "식당 B" 마감: "금요일 18시" 복수'),
-    block('투표를 시작한 뒤에는 후보를 바꿀 수 없어요. 새 투표로 다시 모아줘요 🐻', { isSubtle: true }),
+    block('🐻 투표곰 사용 방법', { weight: 'Bolder', size: 'Medium' }),
+    ...(invalid ? [block('입력하신 내용은 처리할 수 없어요. 아래 사용 방법을 확인해 주세요.')] : []),
+    block('@투표곰만 멘션해 보내면 투표 만들기 카드가 열려요.'),
+    block('카드에 제목, 후보(2~10개), 마감 시간, 복수 선택 여부를 적고 [투표 시작]을 눌러주세요.'),
+    block('마감 시간 예: 3시간, 금요일 18시, 8월 22일 18시, 2026-10-09 18:00 (비워두면 직접 마감할 때까지 열려 있어요)'),
+    block('투표를 시작한 뒤에는 제목과 후보를 바꿀 수 없어요.', { isSubtle: true }),
   ], []);
 }
 
-export function buildCreateCard(draftId: string, prefill: Prefill = {}) {
+export function buildCreateCard(draftId: string) {
   return card([
     block('🐻 투표곰과 선택을 모아봐요!', { weight: 'Bolder', size: 'Medium' }),
     block('아직 준비 중이에요. 이 카드를 부른 분만 시작할 수 있어요 🐾', { isSubtle: true }),
-    { type: 'Input.Text', id: 'title', label: '어떤 걸 함께 골라볼까요?', value: prefill.title ?? '', maxLength: 200, isRequired: true, errorMessage: '투표 이름을 살짝 적어줘요 🐻' },
-    { type: 'Input.Text', id: 'options', label: '후보를 한 줄에 하나씩 적어줘요! 2~10개예요 🧺', value: prefill.options ?? '', isMultiline: true, maxLength: 8_000, isRequired: true,
+    { type: 'Input.Text', id: 'title', label: '어떤 걸 함께 골라볼까요?', maxLength: 200, isRequired: true, errorMessage: '투표 이름을 살짝 적어줘요 🐻' },
+    { type: 'Input.Text', id: 'options', label: '후보를 한 줄에 하나씩 적어줘요! 2~10개예요 🧺', isMultiline: true, maxLength: 8_000, isRequired: true,
       placeholder: '땡땡식당 (https://naver.me/xxxx)\n무슨식당\n초밥집', errorMessage: '후보를 두 개 이상 담아줘요 🧺' },
-    { type: 'Input.Text', id: 'deadline', label: '언제까지 고를까요? 비우면 계속 열어둘게요 ⏰', value: prefill.deadline ?? '', maxLength: 100, placeholder: '금요일 18시 / 8월 22일 18시 / 3시간' },
-    { type: 'Input.Toggle', id: 'multiple', title: '여러 후보에 마음을 줘도 좋아요 🐾', value: prefill.multiple ? 'true' : 'false', valueOn: 'true', valueOff: 'false' },
+    { type: 'Input.Text', id: 'deadline', label: '언제까지 고를까요? 비우면 계속 열어둘게요 ⏰', maxLength: 100, placeholder: '금요일 18시 / 8월 22일 18시 / 3시간' },
+    { type: 'Input.Toggle', id: 'multiple', title: '여러 후보에 마음을 줘도 좋아요 🐾', value: 'false', valueOn: 'true', valueOff: 'false' },
   ], [action('🐻 투표 시작!', 'pollCreate', { draftId }, true)]);
 }
 

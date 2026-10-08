@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-test('Teams ZIP에 등록 명령과 치환된 manifest, 규격 아이콘만 담는다', () => {
+test('Teams ZIP에 치환된 manifest, 규격 아이콘만 담는다', () => {
   const dir = mkdtempSync(join(tmpdir(), 'poll-package-'));
   try {
     cpSync('appPackage', join(dir, 'appPackage'), { recursive: true });
@@ -22,7 +22,7 @@ test('Teams ZIP에 등록 명령과 치환된 manifest, 규격 아이콘만 담�
     assert.equal(manifest.id, '00000000-0000-0000-0000-000000000001');
     assert.equal(manifest.bots[0].botId, manifest.id);
     assert.deepEqual(manifest.bots[0].scopes, ['groupChat']);
-    assert.deepEqual(manifest.bots[0].commandLists[0].commands.map((command: { title: string }) => command.title), ['투표만들기', '투표만들기 + 준비곰 목록']);
+    assert.equal(manifest.bots[0].commandLists, undefined); // 멘션만으로 준비 카드를 펼침
     assert.ok(!contents.includes('must-not-be-packaged'));
     assert.ok(!contents.includes('{{'));
     for (const [name, size] of [['color', 192], ['outline', 32]] as const) {

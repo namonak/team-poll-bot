@@ -1,7 +1,5 @@
 export class PollError extends Error {}
-export type Prefill = { title?: string; options?: string; deadline?: string; multiple?: boolean };
 export type PollConfig = { title: string; options: { name: string; url: string | null }[]; deadline: string | null; multiple: boolean };
-export type Command = { type: 'help' } | { type: 'create'; prefill: Prefill } | { type: 'invalid' };
 
 const length = (value: string) => [...value].length;
 function text(value: unknown, fallback = ''): string {
@@ -10,28 +8,10 @@ function text(value: unknown, fallback = ''): string {
   return value.trim();
 }
 
-export function parseCommand(input: string): Command {
-  if (length(input) > 8_000) return { type: 'invalid' };
-  const value = input.replace(/<at>[^<]*<\/at>/gi, '').replace(/^\s*@?투표곰\s*/, '').trim();
-  if (!value || value === '도움말') return { type: 'help' };
-  const match = /^투표만들기(?:\s+([\s\S]*))?$/.exec(value);
-  if (!match) return { type: 'invalid' };
-  const rest = match[1]?.trim() ?? '';
-  if (!rest.startsWith('+')) return { type: 'create', prefill: { title: rest } };
-  let tail = rest.slice(1).trim();
-  if (!tail || tail === '준비곰 목록') return { type: 'create', prefill: {} };
-  try {
-    const values: string[] = [];
-    while (tail.startsWith('"')) {
-      const quoted = /^"(?:\\.|[^"\\])*"/.exec(tail);
-      if (!quoted) return { type: 'invalid' };
-      values.push(JSON.parse(quoted[0]));
-      tail = tail.slice(quoted[0].length).trim();
-    }
-    const suffix = /^(?:마감:\s*("(?:\\.|[^"\\])*"))?(?:\s*(복수))?$/.exec(tail);
-    if (!suffix || values.length < 3 || values.length > 11) return { type: 'invalid' };
-    return { type: 'create', prefill: { title: values[0], options: values.slice(1).join('\n'), deadline: suffix[1] ? JSON.parse(suffix[1]) : '', multiple: Boolean(suffix[2]) } };
-  } catch { return { type: 'invalid' }; }
+// 멘션만 보내면 준비 카드, '도움말'은 사용 방법, 그 밖의 글자는 안내와 함께 사용 방법을 보여준다.
+export function parseCommand(input: string): 'create' | 'help' | 'invalid' {
+  const value = input.replace(/<at>[^<]*<\/at>/gi, '').replace(/&nbsp;/g, ' ').replace(/^\s*@?투표곰/, '').trim();
+  return !value ? 'create' : value === '도움말' ? 'help' : 'invalid';
 }
 
 const day = 86_400_000;

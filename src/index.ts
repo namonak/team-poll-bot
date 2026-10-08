@@ -40,11 +40,11 @@ export class PollBot extends ActivityHandler {
         const actor = this.remember(context);
         context.activity.removeRecipientMention();
         const command = parseCommand(context.activity.text ?? '');
-        if (command.type === 'create') {
+        if (command === 'create') {
           const draft = service.createDraft(actor);
-          const sent = await context.sendActivity(MessageFactory.attachment(CardFactory.adaptiveCard(buildCreateCard(draft.id, command.prefill))));
+          const sent = await context.sendActivity(MessageFactory.attachment(CardFactory.adaptiveCard(buildCreateCard(draft.id))));
           if (sent?.id) store.setDraftMessage(draft.id, sent.id);
-        } else await context.sendActivity(MessageFactory.attachment(CardFactory.adaptiveCard(buildHelpCard(command.type === 'invalid'))));
+        } else await context.sendActivity(MessageFactory.attachment(CardFactory.adaptiveCard(buildHelpCard(command === 'invalid'))));
       } catch (error) {
         await context.sendActivity(error instanceof PollError ? error.message : '앗, 준비 카드를 펼치지 못했어요. 잠시 뒤 다시 불러줘요 🐻');
       }

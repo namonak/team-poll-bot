@@ -3,13 +3,10 @@ import test from 'node:test';
 import { parseCommand, parseDeadline, validatePoll } from '../src/domain.js';
 
 const now = new Date('2026-10-07T08:00:00Z'); // 수요일 17시 KST
-test('멘션과 제목 또는 일괄 입력을 폼 초기값으로 해석한다', () => {
-  assert.deepEqual(parseCommand('<at>투표곰</at>'), { type: 'help' });
-  assert.deepEqual(parseCommand('투표만들기 테스트2'), { type: 'create', prefill: { title: '테스트2' } });
-  assert.deepEqual(parseCommand('투표만들기 + "점심" "식당 A" "식당 B" 마감: "금요일 18시" 복수'),
-    { type: 'create', prefill: { title: '점심', options: '식당 A\n식당 B', deadline: '금요일 18시', multiple: true } });
-  assert.equal(parseCommand('투표만들기 + 준비곰 목록').type, 'create');
-  assert.equal(parseCommand('투표만들기 + "깨진 따옴표').type, 'invalid');
+test('멘션만 보내면 준비 카드, 도움말은 사용 방법, 그 밖의 입력은 안내 대상이다', () => {
+  for (const input of ['', '<at>투표곰</at>', ' <at>투표곰</at>&nbsp;\n', '@투표곰']) assert.equal(parseCommand(input), 'create', input);
+  assert.equal(parseCommand('<at>투표곰</at> 도움말'), 'help');
+  for (const input of ['<at>투표곰</at> 투표만들기', '투표곰 점심 뭐 먹지']) assert.equal(parseCommand(input), 'invalid', input);
 });
 test('마감은 KST의 미래 시각이며 잘못된 날짜를 보정하지 않는다', () => {
   const cases: [string, string | null][] = [
